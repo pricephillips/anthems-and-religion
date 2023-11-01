@@ -1,0 +1,38 @@
+# Load necessary libraries
+library(tidyverse)
+library(caret)
+library(lmerTest)
+
+# Load the data
+data <- read.csv("data.csv")
+
+# Preprocess the data
+data <- data %>%
+  mutate(
+    # Create new variables
+    religion_dummy = ifelse(religion == "Christianity", 1, 0),
+    anthem_dummy = ifelse(anthem == "Yes", 1, 0)
+  ) %>%
+  na.omit()
+
+# Build a linear mixed effects model to predict national unity
+model <- lmer(
+  national_unity ~ religion_dummy + anthem_dummy + (1 | country),
+  data = data
+)
+
+# Extract the coefficients and p-values from the model
+coefficients <- model$coefficients
+p_values <- model$t.value
+significance_codes <- ifelse(p_values < 0.05, "*", "")
+
+# Create a table of the results
+results <- data.frame(
+  Variable = c("Religion", "National anthem"),
+  Coefficient = coefficients[2:3],
+  P_value = p_values[2:3],
+  Significance_code = significance_codes[2:3]
+)
+
+# Print the table of results
+print(results)
